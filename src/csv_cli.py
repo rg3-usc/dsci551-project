@@ -19,7 +19,7 @@ def insert_new_data(file_path, data_values, column_names):
     # Check if the file already exists
     if os.path.exists(full_path):
         # If the file exists, open the CSV to add new data
-        data = pd.read_csv(full_path)
+        data = pd.read_csv(full_path, index_col=0)  # Set index_col=0 to use the first column as the index
     else:
         # If the file does not exist, create a new DataFrame
         data = pd.DataFrame(columns=column_names)
@@ -38,8 +38,8 @@ def insert_new_data(file_path, data_values, column_names):
     count_column_name = column_names[0]
     data['Count'] = data.groupby(count_column_name)[count_column_name].transform('count')
 
-    # Save to CSV
-    data.to_csv(full_path, index=True)
+    # Save to CSV with index column
+    data.to_csv(full_path, index=True)  # Set index=True to include the index column in the CSV file
 
     return data
 
@@ -62,7 +62,7 @@ def delete_data(file_path, data_values, column_names):
     # Check if the file already exists
     if os.path.exists(full_path):
         # If the file exists, open the CSV and work with existing database
-        data = pd.read_csv(full_path)
+        data = pd.read_csv(full_path, index_col=0)  # Set index_col=0 to use the first column as the index
 
         # Initialize list to store individual conditions
         criteria_list = []
@@ -113,7 +113,7 @@ def edit_data(file_path, data_values, column_names, new_data_values):
     # Check if the file already exists
     if os.path.exists(full_path):
         # If the file exists, open the CSV and work with existing database
-        data = pd.read_csv(full_path)
+        data = pd.read_csv(full_path, index_col=0)  # Set index_col=0 to use the first column as the index
 
         # Initialize list to store individual conditions
         criteria_list = []
@@ -147,3 +147,4 @@ def edit_data(file_path, data_values, column_names, new_data_values):
         return "Data file does not exist"
 
     return data
+
