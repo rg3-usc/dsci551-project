@@ -39,7 +39,7 @@ def insert_new_data(file_path, data_values, column_names):
     data['Count'] = data.groupby(count_column_name)[count_column_name].transform('count')
 
     # Save to CSV
-    data.to_csv(full_path, index=False)
+    data.to_csv(full_path, index=True)
 
     return data
 
@@ -85,7 +85,7 @@ def delete_data(file_path, data_values, column_names):
         data['Count'] = data.groupby(count_column_name)[count_column_name].transform('count')
 
         # Save to CSV
-        data.to_csv(full_path, index=False)
+        data.to_csv(full_path, index=True)
         
     else:
         # If the file does not exist, create a DataFrame to add new baby names
@@ -140,7 +140,7 @@ def edit_data(file_path, data_values, column_names, new_data_values):
             print("Error: Multiple or no matching rows found for the given criteria.")
 
         # Save to CSV
-        data.to_csv(full_path, index=False)
+        data.to_csv(full_path, index=True)
 
     else:
         # If the file does not exist, create a DataFrame to add new baby names
