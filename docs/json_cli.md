@@ -56,7 +56,7 @@
         Enter the key to update: Pns2l4eNsfO8kk83dixA6A
         Enter the new JSON value: {"name":"Test name change","address":"Test address change"}
         
-        Data updated successfully.
+        'Pns2l4eNsfO8kk83dixA6A' updated successfully.
         ```
         <br>
 4. Delete data<br>

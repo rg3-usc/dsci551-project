@@ -82,6 +82,34 @@ class KeyValueStore:
                     data.append(json.loads(line))
         return data
 
+    def update(self, key, new_values):
+        # Check if the key exists
+        if key not in self.primary_keys:
+            print(f"No record found with key '{key}'. Update operation cancelled.")
+            return False
+        # Find the record with the specified key
+        data = self.read_data()
+        updated_data = []
+        record_updated = False
+        for record in data:
+            if record.get(self.primary_key) == key:
+                # Update the record
+                record.update(new_values)
+                updated_data.append(record)
+                record_updated = True
+            else:
+                updated_data.append(record)
+        if record_updated:
+            # Write the updated data back to the file
+            with open(self.file_path, 'w') as file:
+                for record in updated_data:
+                    file.write(json.dumps(record) + '\n')
+            print(f"'{key}' updated successfully.")
+            return True
+        else:
+            print(f"No record found with key '{key}'. Update operation cancelled.")
+            return False
+
     def batch_insert_from_file(self, json_file_path):
         try:
             existing_keys_detected = set()  # Set to track existing keys detected
@@ -165,7 +193,6 @@ def main():
                 print("\nInvalid JSON format. Please try again.")
                 continue
             database.update(key, new_value_dict)
-            print("\nData updated successfully.")
 
         elif choice == '4':
             key = input("Enter the key to delete: ")
