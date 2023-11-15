@@ -175,16 +175,6 @@ def main():
             condition = f"item.get('{field}') {op} {value}"
         filtered_data = [item for item in data if eval(condition, {"item": item})]
         return filtered_data
-
-    '''def custom_merge(data, key, other_data):
-        merged_data = []
-        key_index = {item[key]: item for item in other_data}
-        for item in data:
-            key_value = item.get(key)
-            if key_value in key_index:
-                item.update(key_index[key_value])
-                merged_data.append(item)
-        return merged_data'''
     
     def count(data, group_by=None):
         results = []
@@ -225,7 +215,9 @@ def main():
                     agg_result = sum(valid_items) / len(valid_items) if valid_items else None
                 elif aggregation == "count":
                     agg_result = sum(1 for item in group)
-                results.append({group_by: key, field: agg_result, "aggregation": aggregation})
+                agg_field = aggregation + '_' + field
+                results.append({group_by: key, agg_field: agg_result})
+                # results.append({group_by: key, field: agg_result, "aggregation": aggregation})
         else:
             if aggregation == "sum":
                 result = sum(item.get(field, 0) for item in data)
@@ -238,7 +230,9 @@ def main():
                 result = sum(valid_items) / len(valid_items) if valid_items else None
             elif aggregation == "count":
                 result = sum(1 for item in data)
-            results.append({field: result, "aggregation": aggregation})
+            agg_field = aggregation + '_' + field
+            results.append({group_by: key, agg_field: agg_result})
+            # results.append({field: result, "aggregation": aggregation})
         return results
 
     def sort(data, fields):
@@ -250,6 +244,13 @@ def main():
             else:
                 sorted_data = sorted(sorted_data, key=lambda item: item.get(field))
         return sorted_data
+    def save_result_as(result, file_path):
+        try:
+            with open(file_path, 'w') as file:
+                json.dump(result, file, indent=2)
+            print(f"Result saved successfully at: {file_path}")
+        except Exception as e:
+            print(f"Error saving result: {e}")
 
     # Check if the primary key is already set
     if not database.primary_key:
@@ -322,7 +323,29 @@ def main():
                     condition = ' '.join(parts[1:])
                     data = filter_data(data, condition)
                 elif operation == 'join':
-                    pass
+                    other_file_index = parts.index('with') + 1
+                    other_file_path = parts[other_file_index]
+                    other_data = load_json_data(other_file_path)
+                    # Identify the specified fields for the join
+                    specified_fields = parts[4].split(',') if len(parts) > 4 and parts[3] == 'by' else None
+                    if specified_fields:
+                        # Convert specified_fields to a tuple for use as a dictionary key
+                        key = tuple(specified_fields)
+                        # Check if key is present in both datasets
+                        if all(field in data[0].keys() for field in specified_fields) and all(field in other_data[0].keys() for field in specified_fields):
+                            # Perform the join operation based on specified fields
+                            joined_data = []
+                            key_index_data = {tuple(item[field] for field in specified_fields): item for item in data}
+                            key_index_other_data = {tuple(item[field] for field in specified_fields): item for item in other_data}
+                            for key_value, item_data in key_index_data.items():
+                                if key_value in key_index_other_data:
+                                    # Merge dictionaries from both datasets
+                                    merged_item = {**item_data, **key_index_other_data[key_value]}
+                                    joined_data.append(merged_item)
+                            # Update data with the joined result
+                            data = joined_data
+                    else:
+                        print("\nError: The specified fields are not present in both datasets.")
                 elif operation == 'find':
                     aggregation = parts[1]
                     if aggregation == "count":
@@ -335,6 +358,9 @@ def main():
                 elif operation == 'order':
                     fields = parts[1:]
                     data = sort(data, fields)
+                elif operation == 'save' and parts[1] == 'as':
+                    file_path = ' '.join(parts[2:])
+                    save_result_as(data, file_path)
             print("\nQuery result:")
             for item in data:
                 print(item)
