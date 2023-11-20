@@ -688,16 +688,16 @@ def main():
                         ["Show", "show <fields>", "show name stars",""],
                         ["Filter (comparison)", "filter <field> <comparison condition>", "filter stars > 4","< > <= >= = !="],
                         ["Filter (substring matches)", "filter <field> contains <string or list>", "filter name contains 'Target'\nfilter state contains ['CA','AZ']"],
-                        ["Filter (rows)", "filter row <[range and/or list]>", "filter rows [1:100, 200]"],
+                        ["Filter (rows)", "filter rows <[range and/or list]>", "filter rows [1:100, 200]"],
                         ["Order", "order <fields>", "order -stars name", "asc by default; -<field> for desc"],
                         ["Find (Count)", "find count [optional: by <group_field>]", "find count by state"],
                         ["Find (Aggregation)", "find <aggregation> field [optional: by <group_field>]", "find average stars by state","averge, sum, min, max"],
                         ["Save Result", "save as <file_path>", "save as output.json"],
-                        ["Join", "join with other_file by <fields>", "join with reviews.json by business_id"]
+                        ["Join", "join with <file_path> by <fields>", "join with reviews.json by business_id"]
                     ]
                     print(tabulate(help_table, headers=["Query Operation", "Syntax", "Example","Notes"], tablefmt="fancy_grid"))
                     print("\nNOTE: Multiple operations can be performed sequentially by separating with | ")
-                    print("\te.g.\t filter stars > 4.5 | filter state contains ['CA','NY'] | show name stars review_count | order review_count")
+                    print("\te.g.\t filter stars > 4.5 | filter state contains ['CA','NY'] | show name stars review_count | order review_count\n")
                 else:
                     database.execute_query(query)
                     break
