@@ -23,7 +23,6 @@ class KeyValueStore:
                 self.primary_key = stored_primary_key if stored_primary_key else "business_id"
             else:
                 self.primary_key = None
-
         # Populate primary_keys set with existing keys
         self.populate_primary_keys()
 
@@ -231,7 +230,7 @@ def main():
             elif aggregation == "count":
                 result = sum(1 for item in data)
             agg_field = aggregation + '_' + field
-            results.append({group_by: key, agg_field: agg_result})
+            results.append({agg_field: result})
             # results.append({field: result, "aggregation": aggregation})
         return results
 
