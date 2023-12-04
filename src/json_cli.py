@@ -281,7 +281,8 @@ class KeyValueStore:
     def sort_operation(self, fields, input_file, output_file):
         # Create a list to store the paths of temporary chunk files
         chunk_files = []
-        # Read the data in chunks, sort each chunk, and write to temporary files
+        # Create a dictionary to store the open file handles for each unique value
+        unique_value_files = {}
         with open(input_file, 'r') as input_file:
             while True:
                 # Read lines until the chunk size or until the end of the file
@@ -293,37 +294,53 @@ class KeyValueStore:
                 if not chunk:
                     break
                 # Sort the chunk based on the specified fields
-                sorted_chunk = sorted(chunk, key=lambda x: tuple(x.get(field, '') for field in fields))
-                # Write the sorted chunk to a temporary file
-                chunk_file_path = f"{output_file}_chunk_{len(chunk_files)}.json"
-                with open(chunk_file_path, 'w') as chunk_file:
-                    for record in sorted_chunk:
-                        chunk_file.write(json.dumps(record) + '\n')
-                chunk_files.append(chunk_file_path)
+                is_descending = fields[0].startswith('-')
+                sort_field = fields[0][1:] if is_descending else fields[0]
+                sorted_chunk = sorted(chunk, key=lambda x: x.get(sort_field, ''), reverse=is_descending)
+                # Write the sorted chunk to intermediate files based on the unique values of the first sort field
+                for record in sorted_chunk:
+                    first_sort_field_value = record.get(sort_field, '')
+                    file_handle = unique_value_files.get(first_sort_field_value)
+                    # If the file for the unique value is not open, create and open it
+                    if file_handle is None:
+                        intermediate_file_path = f"{output_file}_intermediate_{first_sort_field_value}.json"
+                        file_handle = open(intermediate_file_path, 'a')  # Open for append
+                        unique_value_files[first_sort_field_value] = file_handle
+                        # Append the intermediate file path to chunk_files
+                        chunk_files.append(intermediate_file_path)
+                    # Write the record to the file
+                    file_handle.write(json.dumps(record) + '\n')
+        # Sort chunk_files based on the unique values of the first sort field
+        chunk_files.sort(key=lambda x: int(re.search(r'\d+', x).group()) if re.search(r'\d+', x) else x)
+        if fields[0].startswith('-'):
+            chunk_files.reverse()
+        # Close all the intermediate files
+        for file_handle in unique_value_files.values():
+            file_handle.close()
         # Merge the sorted chunks into the final output
         self.merge_sorted_chunks(chunk_files, output_file, fields)
     def merge_sorted_chunks(self, chunk_files, output_file, fields):
-        sorted_data = []
-        # Concatenate all the sorted chunks into a list
-        for chunk_file_path in chunk_files:
-            with open(chunk_file_path, 'r') as chunk_file:
-                for line in chunk_file:
+        # Iterate through each intermediate file
+        for file_path in chunk_files:
+            # Sort the intermediate file by additional sort fields
+            sorted_data = []
+            with open(file_path, 'r') as opened_file:
+                for line in opened_file:
                     record = json.loads(line)
                     sorted_data.append(record)
-        # Perform the final sort on the concatenated list
-        for field in reversed(fields):
-            if field.startswith('-'):
-                field = field[1:]  # Remove the '-' for sorting
-                sorted_data = sorted(sorted_data, key=lambda item: item.get(field), reverse=True)
-            else:
-                sorted_data = sorted(sorted_data, key=lambda item: item.get(field))
-        # Write the sorted data to the output file
-        with open(output_file, 'w') as result_file:
-            for record in sorted_data:
-                result_file.write(json.dumps(record) + '\n')
-        # Clean up temporary chunk files
-        for chunk_file_path in chunk_files:
-            os.remove(chunk_file_path)
+            # Perform the final sort on the sorted_data
+            for field in reversed(fields[1:]):
+                if field.startswith('-'):
+                    field = field[1:]  # Remove the '-' for sorting
+                    sorted_data = sorted(sorted_data, key=lambda item: item.get(field, ''), reverse=True)
+                else:
+                    sorted_data = sorted(sorted_data, key=lambda item: item.get(field, ''))
+            # Append the sorted_data to the output file
+            with open(output_file, 'a') as result_file:
+                for record in sorted_data:
+                    result_file.write(json.dumps(record) + '\n')
+            # Clean up intermediate file (optional)
+            os.remove(file_path)
 
     def count_operation(self, input_file, output_file, group_by=None):
         # Create a list to store the paths of temporary chunk files
@@ -474,57 +491,60 @@ class KeyValueStore:
     def save_result_as(self, input_file, file_path):
         try:
             with open(file_path, 'a') as file:
-                # Write the opening bracket for the array
-                file.write("[\n")
+                # Write each record as a separate line
                 with open(input_file, 'r') as result_file:
                     for i, line in enumerate(result_file):
                         record = json.loads(line)
-                        # Add a comma before writing subsequent records (except for the first one)
-                        if i > 0:
-                            file.write(",\n")
-                        # Write the record
-                        file.write(json.dumps(record, indent=2))
-                # Write the closing bracket for the array
-                file.write("\n]\n")
+                        file.write(json.dumps(record, separators=(',', ':')) + '\n')
             print(f"Result saved successfully at: {file_path}")
         except Exception as e:
             print(f"Error saving result: {e}")
 
     def join_datasets(self, input_file_path, output_file, other_file_path, specified_fields):
-        try:
-            # Load data from the temporary input file
-            with open(input_file_path, 'r') as input_file:
-                try:
-                    # Attempt to load as JSON Lines
-                    data = [json.loads(line) for line in input_file]
-                except json.JSONDecodeError:
-                    # If loading as JSON Lines fails, assume it's a JSON array
-                    input_file.seek(0)  # Reset file pointer
-                    data = json.load(input_file)
-            # Load data from the external file
-            with open(other_file_path, 'r') as other_file:
-                other_data = json.load(other_file)
-            # Perform the join operation based on specified fields
-            joined_data = []
-            key_index_data = {tuple(item[field] for field in specified_fields): item for item in data}
-            key_index_other_data = {tuple(item[field] for field in specified_fields): item for item in other_data}
-            for key_value, item_data in key_index_data.items():
-                if key_value in key_index_other_data:
-                    # Merge dictionaries from both datasets
-                    merged_item = {**item_data, **key_index_other_data[key_value]}
-                    joined_data.append(merged_item)
-            # Save the joined data back to the temporary input file
-            with open(output_file, 'w') as results_file:
-                # Determine the format of the input data and write accordingly
-                if isinstance(data, list):  # JSON Lines
-                    for item in joined_data:
-                        results_file.write(json.dumps(item, separators=(',', ':')) + '\n')
-                else:  # JSON array
-                    results_file.write(json.dumps(joined_data, separators=(',', ':')))
-            return joined_data
-        except Exception as e:
-            print(f"Error during join operation: {e}")
-            return None
+        # Create dictionaries to store intermediate file paths
+        input_intermediate_files = {}
+        other_intermediate_files = {}
+        # Process the input file and create intermediate files
+        with open(input_file_path, 'r') as input_file:
+            for line in input_file:
+                item = json.loads(line)
+                key_value = tuple(item[field] for field in specified_fields)
+                intermediate_file_path = f"{output_file}_input_intermediate_{key_value}.json"
+                input_intermediate_files.setdefault(key_value, []).append(item)
+                with open(intermediate_file_path, 'a') as intermediate_file:
+                    intermediate_file.write(json.dumps(item) + '\n')
+        # Process the external file and create intermediate files
+        with open(other_file_path, 'r') as other_file:
+            for line in other_file:
+                item = json.loads(line)
+                key_value = tuple(item[field] for field in specified_fields)
+                intermediate_file_path = f"{output_file}_other_intermediate_{key_value}.json"
+                other_intermediate_files.setdefault(key_value, []).append(item)
+                with open(intermediate_file_path, 'a') as intermediate_file:
+                    intermediate_file.write(json.dumps(item) + '\n')
+        # Iterate through unique keys from both files and perform the join
+        for common_key in set(input_intermediate_files.keys()) | set(other_intermediate_files.keys()):
+            input_records = input_intermediate_files.get(common_key, [])
+            other_records = other_intermediate_files.get(common_key, [])
+            # Create a joined file for the common key
+            joined_file_path = f"{output_file}_joined_intermediate_{common_key}.json"
+            # Write joined records directly to the joined file
+            with open(joined_file_path, 'w') as joined_file:
+                for input_record in input_records:
+                    for other_record in other_records:
+                        joined_record = {**input_record, **other_record}
+                        joined_file.write(json.dumps(joined_record) + '\n')
+        # Merge intermediate files for joined records into the final output
+        self.merge_joined_chunks(output_file, [f"{output_file}_joined_intermediate_{key}.json" for key in set(input_intermediate_files.keys()) | set(other_intermediate_files.keys())])
+    def merge_joined_chunks(self, output_file, intermediate_files):
+        # Concatenate intermediate files for joined records into the final output
+        with open(output_file, 'w') as results_file:
+            for intermediate_file_path in intermediate_files:
+                with open(intermediate_file_path, 'r') as intermediate_file:
+                    for line in intermediate_file:
+                        results_file.write(line)
+                # Clean up intermediate files for joined records (optional)
+                os.remove(intermediate_file_path)
 
     def execute_query(self, query):
         temp_file_path = self.file_path + '_temp'
