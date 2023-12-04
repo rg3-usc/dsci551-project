@@ -21,11 +21,19 @@ class KeyValueStore:
         with open(self.file_path, 'r') as file:
             data = file.readline()
             if data:
-                first_line = json.loads(data)
-                stored_primary_key = first_line.get(self.PRIMARY_KEY_LOCATION)
-                self.primary_key = stored_primary_key if stored_primary_key else "business_id"
+                try:
+                    first_line = json.loads(data)
+                    stored_primary_key = first_line.get(self.PRIMARY_KEY_LOCATION)
+                    self.primary_key = stored_primary_key if stored_primary_key else None
+                except json.JSONDecodeError:
+                    # If the file is not a valid JSON, treat it as a new file
+                    self.primary_key = None
             else:
                 self.primary_key = None
+        # If primary key is not set, prompt the user and save it as the first line
+        if not self.primary_key:
+            self.primary_key = input("Enter the primary key for the dataset: ")
+            self.save_primary_key()
         # Populate primary_keys set with existing keys
         self.populate_primary_keys()
 
@@ -43,6 +51,10 @@ class KeyValueStore:
 
     def insert(self, data, force=False):
         key = data.get(self.primary_key)
+        # Check if the key is None or missing
+        if key is None:
+            print("\nCannot insert data with a missing or None primary key.")
+            return False
         if not force and key in self.primary_keys:
             # If the key exists and force is not set, prompt for confirmation to delete the old record
             confirmation = input(f"A record with the key '{key}' already exists. Do you want to replace it? (y/n): ").lower()
@@ -143,12 +155,16 @@ class KeyValueStore:
                     try:
                         data = json.loads(line)
                         key = data.get(self.primary_key)
+                        # Skip records that are missing the primary key field
+                        if key is None:
+                            print("Skipping record with a missing primary key.")
+                            continue
                         if key in self.primary_keys and key not in existing_keys_detected:
                             # If the key already exists and this is the first encounter, prompt the user
                             if not confirmation_asked:
                                 confirmation = input("\nAt least one record whose primary key already exists in the database. "
-                                                "Batch insert will replace the values of keys that already exist. "
-                                                "Would you still like to proceed? (y/n): ").lower()
+                                                    "Batch insert will replace the values of keys that already exist. "
+                                                    "Would you still like to proceed? (y/n): ").lower()
                             confirmation_asked = True
                             if confirmation != 'y':
                                 print(f"Skipping key '{key}' since it already exists.")
