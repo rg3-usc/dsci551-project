@@ -134,4 +134,4 @@
 7. Exit<br>
     - Ends the CLI session
 
-##### Note In the script, `CHUNK_SIZE` is assigned a default value of 5000 which signifies that 5000 records are processed at a time when processing modifications or queries of the data. User may change this value in line 9 of the python script.
+##### Note: In line 9 of the script, `CHUNK_SIZE` is assigned a default value of 5000 which signifies that 5000 records are processed at a time when processing modifications or queries of the data. User may change this value to accomodate their memory usage needs.
