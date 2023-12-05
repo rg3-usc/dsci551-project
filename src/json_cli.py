@@ -6,7 +6,7 @@ from tabulate import tabulate
 
 class KeyValueStore:
     PRIMARY_KEY_LOCATION = "_primary_key"
-    CHUNK_SIZE = 500
+    CHUNK_SIZE = 5000
 
     def __init__(self, file_path):
         self.file_path = file_path
@@ -53,7 +53,7 @@ class KeyValueStore:
         key = data.get(self.primary_key)
         # Check if the key is None or missing
         if key is None:
-            print("\nCannot insert data with a missing or None primary key.")
+            print("\nCannot insert data with a missing primary key.")
             return False
         if not force and key in self.primary_keys:
             # If the key exists and force is not set, prompt for confirmation to delete the old record
