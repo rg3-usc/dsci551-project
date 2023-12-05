@@ -35,41 +35,28 @@ The project aims to design and implement database systems supporting both relati
     - All database modifications and queries are processed in chunks and are processed externally as temporary file(s) before overwriting (when modifying) or printing (for queries)
     - Note: In line 9 of the [src/json_cli.py](src/json_cli.py), `CHUNK_SIZE` is assigned a default value of 5000 which signifies that 5000 records are processed at a time when processing modifications or queries of the data. User may change this value to accomodate their memory usage needs.
 - Data Modification
-    - Insertion: JSON records can be inserted one-at-a-time or via a batch insertion from an existing JSON source file. 
-        - Insertions are performed by appending the record into the database and does not require reading the entire dataset into memory. 
-        - All primary keys are stored as a set (only primary keys, not the eniter dataset). If the user is attempting to re-insert a previously inserted key, a prompt will confirm if the user wants to overwrite the data or skip the insertion.
-    - Update: specified field updates or new field(s) insertions are supported
-    - Delete: deletion of a record is supported
-        - Updates and deletions are performed by splitting up the dataset into chunks, updating or deleting the record if it exists in the chunk, then creating an external intermediate file that appends together the split chunks back that replaces the prevous file.
+
+    |Data Modification | Details | Memory Usage Notes |
+    | ----------- | ----------------- | -------- | 
+    |Insertion | JSON records can be inserted one-at-a-time or via a batch insertion from an existing JSON source file.   | Insertions are performed by appending the record into the database and does not require reading the entire dataset into memory. <br> All primary keys are stored as a set (only primary keys, not the eniter dataset). If the user is attempting to re-insert a previously inserted key, a prompt will confirm if the user wants to overwrite the data or skip the insertion.|
+    |Update | specified field updates or new field(s) insertions are supported  | Updates are performed by splitting up the dataset into chunks, updating the record's fields if the record exists in the chunk, then creating an external intermediate file that appends together the split chunks which replaces the prevous file. |
+    |Delete | deletion of a record is supported | Deletions are performed by splitting up the dataset into chunks, deleteing the record from the chunk that exists in, then creating an external intermediate file that appends together the split chunks which replaces the prevous file. |
+
 - Query Commands<br>
     - Multiple operations can be performed sequentially by separating each command with |
-        - e.g. `filter stars > 4.5 | filter state contains ['CA','NY'] | show name stars review_count | order review_count`
         - Each query operation is performed one-by-one and processed externally. An intermediate input file is used as the source data for the current query operation, and an intermediate output file is created as result of a query operation. This resulting output file would act as the input file for the next operation, if applicable.
+        - e.g. `filter stars > 4.5 | filter state contains ['CA','NY'] | show name stars review_count | order review_count`
+            - The intermediate input file is the unmodified dataset for the `filter stars > 4.5` query to process. The intermediate output result of this query is the input data for `filter state contains ['CA','NY']` query, and so on and so forth (sequentially) until the final output results of the `order review_count` is then printed.
     - Enter '?help' when prompted to enter a query in the CLI to view details in syntax and examples
-    - Projection (subset columns):
-        - Syntax: `show <field(s)>`
-        - Processed one chunk at a time
-    - Filtering (subset rows):
-        - Syntax (comparison operators): `filter <field> <comparison condition>`
-            - allowed operators:  < > <= >= = !=  
-        - Syntax (substring matches): `filter <field> contains <'string' or ['list','of strings']>`
-        - Syntax (row subset): `filter rows <range and/or list (e.g. [1:100, 200])>`
-        - Processed one chunk at a time
-    - Ordering (sort rows):
-        - Syntax: `order <field(s)>`
-            - ascending by default; `-<field>` for descending
-        - External sort: each unique value of the first sort field has its own intermediate file where all records get allocated to and then later appended as a fully sorted output.
-    - Grouping / Aggregation
-        - Syntax (count): `find count [optional: by <group_field>]`
-        - Syntax (aggregation): `find <aggregation> <field> [optional: by <group_field>]`
-            - averge, sum, min, max
-        - Processed one chunk a time. The results of each chunk are combined and grouped/aggregated once more for the final result. 
-    - Save View
-        - Syntax: `save as <file_path>`
-        - Results of the query can be saved as a json file to be used to join
-    - Join
-        - Syntax: `join with <file_path> by <field(s)>`
-        - External sort-merge-join: each unique value of the first join field will be partitioned into intermdiate files (one from each data source). Each pair of intermediate files are joined to create joined, intermediate files which are appended into a final resulting output of joined records.
+
+    |Query Operation | Syntax | Memory Usage Notes |
+    | ----------- | ----------------- | -------- | 
+    |Projection (subset columns) | `show <field(s)>`  | Processed one chunk at a time to apply modifications and appended back together |
+    |Filtering (subset rows) | `filter <field> <comparison operator* condition>`<br>*< > <= >= = !=<br><br>`filter <field> contains <'string' or ['list','of strings']>`<br><br>`filter rows <range and/or list (e.g. [1:100, 200])>`  | Processed one chunk at a time to apply modifications and appended back together |
+    |Ordering (sort rows) | `show <field(s)>` <br> * asc by default; -\<field> for desc  | External sort: each unique value of the first sort field has its own intermediate file where all records get allocated to and then later appended as a fully sorted output. |
+    |Grouping / Aggregation | `find count [optional: by <group_field>]`<br><br>`find <averge, sum, min, or max> <field> [optional: by <group_field>]`  | Processed one chunk a time. The results of each chunk are combined and grouped/aggregated once more for the final result.  |
+    |Save View | `save as <file_path>`  | Results of the query can be saved as a json file to may later be used to join with |
+    |Join | `join with <file_path> by <field(s)>`  | External sort-merge-join: each unique value of the first join field will be partitioned into intermdiate files (one from each data source). Each pair of intermediate files are joined to create joined, intermediate files which are appended into a final resulting output of joined records. |
 ### B. Usage
 - Install dependencies: 
     - `pip install json tabulate`
