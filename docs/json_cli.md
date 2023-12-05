@@ -71,7 +71,20 @@
     - Prints out (chunk-by-chunk) the current file content<br><br>
 6. Query data<br>
     - When prompted enter query operation(s)
-    - Enter '?help' to see documentation on syntax and examples of all available query commands
+    - Enter '?help' to see documentation on syntax and examples of all available query commands<br>
+
+    |Query Operation | Syntax | Example | Notes |
+    | ----------- | ----------------- | -------- | ------- |
+    |Show | `show <field(s)>`  | `show name stars` |  |
+    |Filter (comparison) | `filter <field> <comparison condition>`  | `filter stars > 4` | < > <= >= = != |
+    |Filter (substring matches) | `filter <field> contains <string or list>`  | `filter name contains 'Target'` <br>`filter state contains ['CA','AZ']` |  |
+    |Filter (rows) | `filter rows <[range and/or list]>`  | `filter rows [1:100, 200]` |  |
+    |Order | `order <field(s)>`  | `order -stars name` |asc by default; -<field> for desc |
+    |Find (Count) | `find count [optional: by <group_field>]`  | `find count by state` |  |
+    |Find (Aggregation) | `find <aggregation> <field> [optional: by <group_field>]`  | `find average stars by state` |averge, sum, min, max   |
+    |Save Result | `save as <file_path> `  | `save as output.json` |  |
+    |Join | `join with <file_path> by <field(s)>`  | `join with reviews.json by business_id` |  |
+    
     - Multiple operations can be performed by separating operations with | 
         - Note: Query operations are performed sequentially so the order of the query commands are important.
             - `filter stars>=4 | filter rows [1:10]`: First records are filtered for where stars >=4 <u>THEN</u> first ten rows are filtered
