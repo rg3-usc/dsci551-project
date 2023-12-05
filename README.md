@@ -33,6 +33,7 @@ The project aims to design and implement database systems supporting both relati
     - Flexible schema with the primary key field configured at initiation of the database
 - Memory Handling
     - All database modifications and queries are processed in chunks and are processed externally as temporary file(s) before overwriting (when modifying) or printing (for queries)
+    - Note: In line 9 of the [src/json_cli.py](src/json_cli.py), `CHUNK_SIZE` is assigned a default value of 5000 which signifies that 5000 records are processed at a time when processing modifications or queries of the data. User may change this value to accomodate their memory usage needs.
 - Data Modification
     - Insertion: JSON records can be inserted one-at-a-time or via a batch insertion from an existing JSON source file. 
         - Insertions are performed by appending the record into the database and does not require reading the entire dataset into memory. 
