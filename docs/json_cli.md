@@ -81,7 +81,7 @@
     |Filter (rows) | `filter rows <[range and/or list]>`  | `filter rows [1:100, 200]` |  |
     |Order | `order <field(s)>`  | `order -stars name` |asc by default; -<field> for desc |
     |Find (Count) | `find count [optional: by <group_field>]`  | `find count by state` |  |
-    |Find (Aggregation) | `find <aggregation> <field> [optional: by <group_field>]`  | `find average stars by state` |averge, sum, min, max   |
+    |Find (Aggregation) | `find <aggregation> <field> [optional: by <group_field>]`  | `find average stars by state` |average, sum, min, max   |
     |Save Result | `save as <file_path> `  | `save as output.json` |  |
     |Join | `join with <file_path> by <field(s)>`  | `join with reviews.json by business_id` |  |
     
