@@ -12,7 +12,7 @@ The project aims to design and implement database systems supporting both relati
 - Schema
     - Headers: Id, Name, Year, Gender
 - Storage / Memory Handling
-    - Data stored as tables in separate chunks categorized by gender and first letter of name (e.g.: female_k.csv)
+    - Data stored as tables in separate chunks categorized by gender and first letter of name (e.g. female_k.csv)
 - Data Modification
     - \<placeholder>
 - Query Commands
@@ -32,7 +32,7 @@ The project aims to design and implement database systems supporting both relati
 - Schema
     - Flexible schema with the primary key field configured at initiation of the database
 - Memory Handling
-    - All database modifications and queries are processed in chunks and are processed externally as temporary file(s) before overwriting (when modifying) or printing (for queries)
+    - All database modifications and queries are processed in chunks. Modifications and queries are processed as external temporary file(s) before overwriting (modifications) or printing (queries)
     - Note: In line 9 of the [src/json_cli.py](src/json_cli.py), `CHUNK_SIZE` is assigned a default value of 5000 which signifies that 5000 records are processed at a time when processing modifications or queries of the data. Users may change this value to accomodate their memory usage needs.
 - Data Modification
 
@@ -53,10 +53,10 @@ The project aims to design and implement database systems supporting both relati
     | ----------- | ----------------- | -------- | 
     |Projection (subset columns) | `show <field(s)>`  | Processed one chunk at a time to apply modifications and appended back together |
     |Filtering (subset rows) | `filter <field> <comparison operator* condition>`<br>*< > <= >= = !=<br><br>`filter <field> contains <'string' or ['list','of strings']>`<br><br>`filter rows <range and/or list (e.g. [1:100, 200])>`  | Processed one chunk at a time to apply modifications and appended back together |
-    |Ordering (sort rows) | `show <field(s)>` <br> * asc by default; -\<field> for desc  | External sort: each unique value of the first sort field has its own intermediate file where all records get allocated to and then later appended as a fully sorted output. |
-    |Grouping / Aggregation | `find count [optional: by <group_field>]`<br><br>`find <averge, sum, min, or max> <field> [optional: by <group_field>]`  | Processed one chunk a time. The results of each chunk are combined and grouped/aggregated once more for the final result.  |
-    |Save View | `save as <file_path>`  | Results of a query can be saved as a json file which may later be used to perform a join with |
-    |Join | `join with <file_path> by <field(s)>`  | External sort-merge-join: each unique value of the first join field will be partitioned into intermdiate files (one from each data source). Each pair of intermediate files are joined to create joined, intermediate files which are appended into a final resulting output of joined records. |
+    |Ordering (sort rows) | `order <field(s)>` <br> * asc by default; -\<field> for desc  | External sort: each unique value of the first sort field has its own intermediate file where all records get allocated to and then later appended as a fully sorted output. |
+    |Grouping / Aggregation | `find count [optional: by <group_field>]`<br><br>`find <average, sum, min, or max> <field> [optional: by <group_field>]`  | Processed one chunk at a time. The results of each chunk are combined and grouped/aggregated once more for the final result.  |
+    |Saving Query View | `save as <file_path>`  | Results of a query can be saved as a json file which may later be used to perform a join with |
+    |Joining | `join with <file_path> by <field(s)>`  | External sort-merge-join: each unique value of the first join field will be partitioned into intermediate files (one from each data source). Each pair of intermediate files are joined to create joined, intermediate files which are appended into a final resulting output of joined records. |
 ### B. Usage
 - Install dependencies: 
     - `pip install json tabulate`
