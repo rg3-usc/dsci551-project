@@ -43,7 +43,7 @@ Enter file path when prompted (a new folder will be created automatically if fol
         Data loaded successfully from the CSV file!
         ```
    - Do not batch load the same CSV twice. Clear the data (Choice 7) if for some reason the same batch needs to be uploaded again.
-   - A sample data file is provided in this Github repo: sample_data.csv
+   - A sample data file is provided in this Github repo: csv_cli_sample_data.csv
 
 3. Delete existing entry <br>
    - When prompted, enter the record to delete by indicating the name, year of birth, and gender.
