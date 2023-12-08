@@ -1,8 +1,7 @@
 import os
 import csv
-import pandas as pd
 import string
-
+import pandas as pd
 
 class BabyNamesDatabase:
     def __init__(self, file_path):
@@ -204,7 +203,7 @@ class BabyNamesDatabase:
 
         if not matching_records:
             print(f"No records found for {name} in {year} with gender {gender}.")
-            return False4
+            return False
 
         # Display matching records and their counts
         print(f"\nMatching records for {name} in {year} with gender {gender}:")
@@ -588,7 +587,7 @@ def main():
             year = input("Enter year of birth: ")
             gender = input("Enter gender (M or F): ")
             if database.update(directory, name, year, gender):
-                print(f"\nThe count for the record was updated successfully")
+                print(f"\nThe count for the record was updated successfully!")
             else:
                 print(f"\nNo record found for {name} in {year} with gender {gender}.")
 
