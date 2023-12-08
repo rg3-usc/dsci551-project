@@ -19,7 +19,7 @@ The project aims to design and implement database systems supporting both relati
     |Insertion | Records can be inserted one-at-a-time or via a batch insertion from an existing list of names from a CSV file | Insertions are placed into chunks based on  gender and the first letter of each name. If the name and year combination does not exist, the new record is appended to the data, a unique Id is assigned, and the count is assigned as ‘1’. If the name combination exists within the CSV, the existing record will increase the count by +1.|
     |Update | Updating the counts of records is supported | To update the count of a record, the user must provide the name, year and gender. If there is a matching record, the user may enter the new count for the record. |
     |Delete | Deletion of a record is supported | To delete a record, the user must provide the name, year and gender. If there is a matching record, the user will be shown that record and prompted to either enter 'all' to delete all record or specify the number of those records they’d like to delete from the count. |
-- Query Commands <br>
+- Query Language <br>
 The query system for this relational database uses the following syntax:<br> `FIND <name> <gender> <year> CONDITION <aggregate> <value> ORDER <order> BY <col name> RETURN <col names>`<br><br>
 This syntax is designed for the query to be parsed in the below order which identifies the chunks it will need to process to fulfill the query:
     |Query Operation | Syntax | Memory Usage Notes |
@@ -54,7 +54,7 @@ This syntax is designed for the query to be parsed in the below order which iden
     |Update | Updates to specific fields and/or new field(s) insertions are supported  | Updates are performed by splitting up the dataset into chunks, updating the record's fields if the record exists in the chunk, then creating an external intermediate file that appends together the split chunks which replaces the prevous file. |
     |Delete | Deletion of a record is supported | Deletions are performed by splitting up the dataset into chunks, deleteing the record from the chunk that exists in, then creating an external intermediate file that appends together the split chunks which replaces the prevous file. |
 
-- Query Commands<br>
+- Query Language<br>
     - Multiple operations can be performed sequentially by separating each command with |
         - Each query operation is performed one-by-one and processed externally. An intermediate input file is used as the source data for the current query operation, and an intermediate output file is created as result of a query operation. This resulting output file would act as the input file for the next operation, if applicable.
         - e.g. `filter stars > 4.5 | filter state contains ['CA','NY'] | show name stars review_count | order review_count`
