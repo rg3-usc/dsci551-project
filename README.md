@@ -20,7 +20,7 @@ The project aims to design and implement database systems supporting both relati
     |Update | Updating the counts of records is supported | To update the count of a record, the user must provide the name, year and gender. If there is a matching record, the user may enter the new count for the record. |
     |Delete | Deletion of a record is supported | To delete a record, the user must provide the name, year and gender. If there is a matching record, the user will be shown that record and prompted to either enter 'all' to delete all record or specify the number of those records they’d like to delete from the count. |
 - Query Commands <br>
-The query system for this relational database using the following syntax:<br> `FIND <name> <gender> <year> CONDITION <aggregate> <value> ORDER <order> BY <col name> RETURN <col names>`<br><br>
+The query system for this relational database uses the following syntax:<br> `FIND <name> <gender> <year> CONDITION <aggregate> <value> ORDER <order> BY <col name> RETURN <col names>`<br><br>
 This syntax is designed for the query to be parsed in the below order which identifies the chunks it will need to process to fulfill the query:
     |Query Operation | Syntax | Memory Usage Notes |
     | ----------- | ----------------- | -------- | 
