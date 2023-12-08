@@ -16,7 +16,7 @@ The project aims to design and implement database systems supporting both relati
 - Data Model
     - Data stored as .csv tables across multiple files
 - Schema
-    - Headers: Id, Name, Year, Gender
+    - Headers: Id, Name, Year, Gender, Count
 - Memory Handling
     - Data stored as tables in separate chunks categorized by gender and first letter of name (e.g. female_k.csv)
 - Data Modification
