@@ -6,7 +6,13 @@ The project aims to design and implement database systems supporting both relati
 
 ## I. Relational Database
 #### Dataset source: [US Baby Names (Kaggle)](https://www.kaggle.com/datasets/kaggle/us-baby-names/)
-### A. Features
+### A. Usage
+- Install dependencies: 
+    - `pip install pandas`
+- Use interactive CLI:
+    - `python src/csv_cli.py`
+    - Documentation / demo of all features of the CLI: [docs/csv_cli.md](docs/csv_cli.md)
+### B. Features
 - Data Model
     - Data stored as .csv tables across multiple files
 - Schema
@@ -29,16 +35,15 @@ This syntax is designed for the query to be parsed in the below order which iden
     | Ordering (sort rows) | `ORDER <order> BY <col name>` | The data may be ordered as desc, asc, [desc,asc] or None. It can be ordered by \<col name> col1, col2, [col1,col2] or None.|
     |Projection (subset columns) | `RETURN <col names>` | Return select column names: col1, col2, [col1,col2] or 'all'|
 
-### B. Usage
-- Install dependencies: 
-    - `pip install pandas`
-- Use interactive CLI:
-    - `python src/csv_cli.py`
-    - Documentation / demo of all features of the CLI: [docs/csv_cli.md](docs/csv_cli.md)
-
 ## II. Non-Relational Database
 #### Dataset source: [Yelp Dataset (Kaggle)](https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset)
-### A. Features
+### A. Usage
+- Install dependencies: 
+    - `pip install json tabulate`
+- Use interactive CLI:
+    - `python src/json_cli.py`
+    - Documentation / demo of all features of the CLI: [docs/json_cli.md](docs/json_cli.md)
+### B. Features
 - Data Model
     - Each dataset is stored as an individual JSON file with field-value pairs
 - Schema
@@ -69,9 +74,3 @@ This syntax is designed for the query to be parsed in the below order which iden
     |Grouping / Aggregation | `find count [optional: by <group_field>]`<br><br>`find <average, sum, min, or max> <field> [optional: by <group_field>]`  | Processed one chunk at a time. The results of each chunk are combined and grouped/aggregated once more for the final result.  |
     |Saving Query View | `save as <file_path>`  | Results of a query can be saved as a json file which may later be used to perform a join with |
     |Joining | `join with <file_path> by <field(s)>`  | External sort-merge-join: each unique value of the first join field will be partitioned into intermediate files (one from each data source). Each pair of intermediate files are joined to create joined, intermediate files which are appended into a final resulting output of joined records. |
-### B. Usage
-- Install dependencies: 
-    - `pip install json tabulate`
-- Use interactive CLI:
-    - `python src/json_cli.py`
-    - Documentation / demo of all features of the CLI: [docs/json_cli.md](docs/json_cli.md)
