@@ -6,12 +6,12 @@
 - Enter file path when prompted (a new file will be created automatically if file does not exist)
 - Additionally, when starting a new file, enter the primary key of the dataset. 
     ```
-    Enter the path to the database file: data/tests/demo.json
+    Enter the path to the database file: data/tests/json_cli_sample_business_data.json
     Enter the primary key for the dataset: business_id
     ```
 - If the file is not new, the primary key should have been saved from the initial session and it is not required to re-enter. Instead, the key value will be printed.
     ```
-    Enter the path to the database file: data/tests/demo.json
+    Enter the path to the database file: data/tests/json_cli_sample_business_data.json
     Using primary key: business_id
     ```
 - Enter a number to issue a command (detailed below)
